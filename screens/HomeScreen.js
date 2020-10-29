@@ -30,9 +30,7 @@ export default class HomeScreen extends React.Component{
   }
 
   componentDidMount=()=>{
-  
-    this.getShopsList()
-     
+    this.getShopsList()   
     }
     
 
@@ -40,12 +38,10 @@ updateShopName=()=>{
   db.collection("shops").add({
     "shopName":this.state.shopName,
     "Items":'',
-    "notification_status":"unread"
   })
 }
 
   keyExtractor = (item, index) => index.toString()
-
 
   renderShops = ( {item, i} ) =>{
     return (

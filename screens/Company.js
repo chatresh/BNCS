@@ -6,92 +6,66 @@ import {SwipeListView} from 'react-native-swipe-list-view'
 import firebase from 'firebase';
 import db from '../config'
 import MyHeader from '../components/MyHeader'
+
 import MamyPoko from './MamyPoko'
 
-export default class Company extends React.Component{
-     constructor(){
+export default class HomeScreen extends React.Component{
+  constructor(){
     super()
     this.state={
-      Company:'',
+      CompanyName:'',
       allCompanies:[],
-      docid:'',
-
-      apsaraDoc:'',
+      Company:'',
     }
   }
  
-  getCompanyList =()=>{
-    this.requestRef = db.collection("companies")
+
+  getShopsList =()=>{
+    this.requestRef = db.collection("Company")
     .onSnapshot((snapshot)=>{
       var allCompanies = snapshot.docs.map(document => document.data());
       this.setState({
         allCompanies : allCompanies
       });
     })
-
-                                                          
   }
- 
-  updateMarkAsRead=(notification)=>{
-     db.collection("shops").doc(notification.doc_id).update({
-         "notification_status":"read"
-     })
+
+  componentDidMount=()=>{
+    this.getShopsList()   
     }
     
-    onChangeSwipeValue=(swipeData)=>{
-      var allNotifications = this.state.allCompanies
-      const {key,value} = swipeData
-      if (value<-Dimensions.get('window').width) {
-          const newData = [...this.state.allCompanies]
-          const preIndex = allNotifications.findItem((item)=>{
-            this.updateMarkAsRead(allNotifications[preIndex])
-             newData.splice(preIndex,1)
-             this.setState({allCompanies:newData})
-          })
-      }
-    }
-    
-     updateCompanyNameInListItemForShop=()=>{
-  db.collection("companies").add({
-    "Name":this.state.Company
+
+CompanyName=()=>{
+  db.collection("Company").add({
+    "Name":this.state.CompanyName,
   })
-  this.setState({Company:''})
 }
-
-
- docIds=()=>{
-   db.collection("companies").where("Name","==","Apsara")
-   .onSnapshot((snapshot)=>{
+  
+  Find_And_Navigate_Screen=async()=>{
+    await db.collection("Company")
+    .onSnapshot((snapshot)=>{
       snapshot.forEach((doc)=>{
-       this.setState({apsaraDoc:doc.id})
-     })
-   })
- }
+        this.setState({Company:doc.data().Name})
+      })
+    })
 
-    componentDidMount=()=>{
-        this.getCompanyList();
-        this.docIds();
-    }
+      this.props.navigation.navigate("MamyPoko")
+      
     
- renderItem = ( {item, i} ) =>{
+  }
+
+  keyExtractor = (item, index) => index.toString()
+
+  renderShops = ( {item, i} ) =>{
     return (
       <ListItem
         key={i}
         title={item.Name}
         titleStyle={{ color: 'black', fontWeight: 'bold' }}
-        rightElement={
+         rightElement={
             <TouchableOpacity style={styles.button} onPress={()=>{
-                db.collection("companies")
-                .onSnapshot((snapshot)=>{
-                  snapshot.forEach((doc)=>{
-                      this.setState({docs:doc.id})
-                  })
-                })
-
-               
-            }}
-       
-            >
+                this.Find_And_Navigate_Screen()
+            }}>
               <Text style={{color:'#ffff'}}>Enter</Text>
             </TouchableOpacity>
           }
@@ -99,50 +73,39 @@ export default class Company extends React.Component{
       />
     )
   }
+
+
   render(){
-       return(
-        <View>
-       <ScrollView>
-         <MyHeader title="BNCS" navigation={this.props.navigation}/>
-  
-   <TextInput style={{
-  width:"25%",
-   height:35,
-   alignSelf:'center',
-   borderColor:'#ffab91',
-   borderRadius:10,
-   borderWidth:1,
-   marginTop:50,
-   padding:10
-   }}
-   placeHolder="Company name"
-    onChangeText={(text)=>{this.setState({Company:text})}}
-    value={this.state.Company}
-   />
-   <TouchableOpacity style={styles.registerButton} onPress={()=>{
-     this.updateCompanyNameInListItemForShop();
-   }}>
-   <Text style = {styles.registerButtonText}>Add</Text>
-   </TouchableOpacity>
-
-   <SwipeListView
-            disableRightSwipe
-            data={this.state.allCompanies}
-            renderItem={this.renderItem}
-            renderHiddenItem={this.renderHiddenItem}
-            rightOpenValue={-Dimensions.get('window').width}
-            previewRowKey={0}
-            previewOpenValue={-40}
-            previewOpenDelay={3000}
-            onSwipeValueChange={this.onChangeSwipeValue}
-            />
-
+       return (
+  <View>
+  <ScrollView>
+      <MyHeader title="BNCS" navigation={this.props.navigation}/>
+ <TextInput style={styles.TextInput}
+ placeHolder="Enter the Company name"
+ onChangeText={(text)=>{this.setState({CompanyName:text})}}
+ value={this.state.CompanyName}
+ />
+  <TouchableOpacity style={styles.registerButton} onPress={()=>{
+    this.CompanyName();
+  }}>
+  <Text style={styles.registerButtonText} >Click to enter list</Text>
+  </TouchableOpacity>
+      
+      <FlatList
+   keyExtractor={this.keyExtractor}
+   data={this.state.allCompanies}
+   renderItem={this.renderShops}
+  />
  </ScrollView>
-   </View>
-
-      )
+       </View>
+  )
+    
+    
+ 
   }
 }
+
+
 
 const styles= StyleSheet.create({
   registerButton:{

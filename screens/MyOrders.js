@@ -16,7 +16,7 @@ export default class MyOrders extends React.Component{
     getShopsListToDisplayInFlatList=()=>{
        this.requestRef =  db.collection("shops")
        .onSnapshot((snapshot)=>{
-         snapshot.forEach((doc)=>{
+         snapshot.docs.map((doc)=>{
           if(doc.data().Items!==""){
             this.setState({
              allShops:doc.data()
